@@ -7,12 +7,14 @@ from . import data_augment
 import threading
 import itertools
 
+
 # 두 영역의 넓이의 합을 구함
 def union(au, bu, area_intersection):
     area_a = (au[2] - au[0]) * (au[3] - au[1])
     area_b = (bu[2] - bu[0]) * (bu[3] - bu[1])
     area_union = area_a + area_b - area_intersection
     return area_union
+
 
 # 두 영역의 교차 지역의 넓이의 합을 구함
 def intersection(ai, bi):
@@ -38,6 +40,7 @@ def iou(a, b):
     # area_u가 0일 경우를 대비해서 1e-6 을 해놓는 것 같음
     return float(area_i) / float(area_u + 1e-6)
 
+
 # 이미지의 짧은 쪽이 600이 되도록 비율을 계산해서 줌
 def get_new_img_size(width, height, img_min_side=600):
     if width <= height:
@@ -50,6 +53,7 @@ def get_new_img_size(width, height, img_min_side=600):
         resized_height = img_min_side
 
     return resized_width, resized_height
+
 
 # 클래스 별로 골고루 뽑기 위한 helper class
 class SampleSelector:
@@ -122,6 +126,8 @@ def calc_rpn(C, img_data, width, height, resized_width, resized_height, img_leng
             anchor_x = anchor_sizes[anchor_size_idx] * anchor_ratios[anchor_ratio_idx][0]
             anchor_y = anchor_sizes[anchor_size_idx] * anchor_ratios[anchor_ratio_idx][1]
 
+            # anchor box를 만들어서 bbox 기준으로 iou 값을 계산해서 가장 높은 값을 갖는 영역 과 특정 range의 iou를 갖는 영역을 계산해냄
+            # + regression 을 위한 값도 계산함
             for ix in range(output_width):
                 # x-coordinates of the current anchor box
                 x1_anc = downscale * (ix + 0.5) - anchor_x / 2
@@ -274,8 +280,10 @@ class threadsafe_iter:
 def threadsafe_generator(f):
     """A decorator that takes a generator function and makes it thread-safe.
     """
+
     def g(*a, **kw):
         return threadsafe_iter(f(*a, **kw))
+
     return g
 
 
@@ -322,7 +330,7 @@ def get_anchor_gt(all_img_data, class_count, C, img_length_calc_function, backen
 
                 try:
                     y_rpn_cls, y_rpn_regr = calc_rpn(C, img_data_aug, width, height, resized_width, resized_height,
-                                                      img_length_calc_function)
+                                                     img_length_calc_function)
                 except:
                     continue
 
