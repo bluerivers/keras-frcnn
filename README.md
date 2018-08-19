@@ -1,6 +1,17 @@
 # keras-frcnn
 Keras implementation of Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks.
 
+사용법:
+- 학습 데이터 다운로드: 
+    - the Pascal VOC data set (images and annotations for bounding boxes around the classified objects) can be obtained from: http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar
+    - 압축을 풀고나면 `VOCtrainval_11-May-2012/VOCdevkit`를 Repository root directory로 꺼냄
+- 학습: `python train_frcnn.py -p ./VOCdevkit [--num_epochs 2000]`
+    - `--num_epochs` 옵션을 지정하지 않으면 2000 * 1000 * train time per iteration 만큼 시간이 걸립니다. GTX1080 기준으로 11일이 걸립니다...?!
+    - `-p` 옵션으로 선택된 directory 하위의 `VOC2012` directory는 코드에 하드코딩 되어있습니다.
+    - 따라서, VOCdevkit의 이름은 상관없으나 하위 폴더로 `VOC2012`를 포함해야 합니다.
+- 테스트: `python test_frcnn.py -p ./VOCdevkit`
+    - 테스트 결과를 어떻게 확인하는지는 아직 확인해보지 못했습니다.
+
 
 USAGE:
 - Both theano and tensorflow backends are supported. However compile times are very high in theano, and tensorflow is highly recommended.
