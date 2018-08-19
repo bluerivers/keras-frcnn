@@ -76,6 +76,9 @@ class SampleSelector:
 			return True
 
 
+# 이미지의 ground truth bounding box들과 비교하여 iou가 0.7 초과인 것을 pos, 0.3 미만인 것을 neg로 분류
+# pos인 경우 gt와 anchor의 diff? regression? 값을 가지고 있음
+# pos, neg 128개씩 sampling, y_is_box_valid로 표시함 (pos개수가 적으면 (100, 156)처럼 될듯)
 def calc_rpn(C, img_data, width, height, resized_width, resized_height, img_length_calc_function):
 
 	downscale = float(C.rpn_stride)
@@ -270,6 +273,9 @@ def threadsafe_generator(f):
 		return threadsafe_iter(f(*a, **kw))
 	return g
 
+
+# traning, testing에 필요한 x, y data 생성
+# calc_rpn에서 gt box를 가지고 traning, testing에 사용할 pos, neg anchor sample 생성
 def get_anchor_gt(all_img_data, class_count, C, img_length_calc_function, backend, mode='train'):
 
 	# The following line is not useful with Python 3.5, it is kept for the legacy
