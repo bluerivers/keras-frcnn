@@ -226,6 +226,7 @@ def non_max_suppression_fast(boxes, probs, overlap_thresh=0.9, max_boxes=300):
 import time
 
 
+# rpn에 의해 추천된 영역을 실질적인 b-box 영역으로 변경함
 def rpn_to_roi(rpn_layer, regr_layer, C, dim_ordering, use_regr=True, max_boxes=300, overlap_thresh=0.9):
     regr_layer = regr_layer / C.std_scaling
 
@@ -249,6 +250,7 @@ def rpn_to_roi(rpn_layer, regr_layer, C, dim_ordering, use_regr=True, max_boxes=
     for anchor_size in anchor_sizes:
         for anchor_ratio in anchor_ratios:
 
+            # anchor box이 x 크기, y 크기를 구함
             anchor_x = (anchor_size * anchor_ratio[0]) / C.rpn_stride
             anchor_y = (anchor_size * anchor_ratio[1]) / C.rpn_stride
             if dim_ordering == 'th':
@@ -257,13 +259,19 @@ def rpn_to_roi(rpn_layer, regr_layer, C, dim_ordering, use_regr=True, max_boxes=
                 regr = regr_layer[0, :, :, 4 * curr_layer:4 * curr_layer + 4]
                 regr = np.transpose(regr, (2, 0, 1))
 
+            # meshgrid => [0, 1, 2, 3], [0, 1, 2] => (0, 0), (0, 1), ...
+            # 특정 크기로 맞춘 이미지에서 rpn_stride 으로 영역을 나눈 만큼의 좌표 개수
             X, Y = np.meshgrid(np.arange(cols), np.arange(rows))
 
+            # 영역을 가운데로 맞춤
             A[0, :, :, curr_layer] = X - anchor_x / 2
             A[1, :, :, curr_layer] = Y - anchor_y / 2
+
+            # size
             A[2, :, :, curr_layer] = anchor_x
             A[3, :, :, curr_layer] = anchor_y
 
+            # 영역에 regression 값을 적용함
             if use_regr:
                 A[:, :, :, curr_layer] = apply_regr_np(A[:, :, :, curr_layer], regr)
 
@@ -287,11 +295,14 @@ def rpn_to_roi(rpn_layer, regr_layer, C, dim_ordering, use_regr=True, max_boxes=
     x2 = all_boxes[:, 2]
     y2 = all_boxes[:, 3]
 
+    # 값이 역전되어 있는 걸 제외
     idxs = np.where((x1 - x2 >= 0) | (y1 - y2 >= 0))
 
     all_boxes = np.delete(all_boxes, idxs, 0)
     all_probs = np.delete(all_probs, idxs, 0)
 
+    # https://m.blog.naver.com/PostView.nhn?blogId=jinsoo91zz&logNo=220511441402&proxyReferer=https%3A%2F%2Fwww.google.com%2F
+    # 비슷한 영역을 하나로 뭉침
     result = non_max_suppression_fast(all_boxes, all_probs, overlap_thresh=overlap_thresh, max_boxes=max_boxes)[0]
 
     return result

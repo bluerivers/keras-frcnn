@@ -198,6 +198,12 @@ for epoch_num in range(num_epochs):
 
             loss_rpn = model_rpn.train_on_batch(X, Y)
 
+            # 먼저 입력값을 그림으로 받아 rpn class 에서 물체인지 아닌지의 확률이 출력되도록 합니다.
+            # 입력 이미지는 짧은 쪽의 해상도가 600px이 되도록 조정됩니다. 1280*960px 해상도를 가진 이미지라면 800*600px 으로 조정됩니다.
+            # 그리고 이 이미지를 16*16px의 블럭으로 분할하는데, 각 블럭별로 물체일 확률이 추출됩니다.
+            # rpn class 레이어에서 출력하는 값은 각 블럭별로 물체가 존재할 확률을 갖는 50*38 크기의 배열이 되며 위 코드에서는 Y1에 해당합니다.
+            # Y2는 영역 미세 조정에 사용되는 회귀값이며 F는 기반 레이어의 출력값입니다.
+            # P_rpn = [x_class, x_regr, base_layers]
             P_rpn = model_rpn.predict_on_batch(X)
 
             # 여기부터 fast rcnn부분인거 같음 (model_classifier에 들어갈 값으로 바뀌는 듯)
